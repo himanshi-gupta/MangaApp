@@ -1,6 +1,7 @@
 package com.example.mangaapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -23,12 +24,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,12 +53,20 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mangaapp.database.UserDao
+import com.example.mangaapp.database.UserDatabase
 import com.example.mangaapp.ui.theme.MangaAppTheme
+import com.example.mangaapp.viewmodels.UserViewModel
+import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
 
 class MainActivity : ComponentActivity() {
+    lateinit var userViewModel: UserViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val userDao = UserDatabase.getInstance(this).userDao()
+        userViewModel = UserViewModel(userDao)
         setContent {
             MangaAppTheme {
                 Column(
@@ -57,7 +75,9 @@ class MainActivity : ComponentActivity() {
                         .background(colorResource(R.color.Jet_black)),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    SignIn("", "")
+                    var email by rememberSaveable { mutableStateOf("") }
+                    var paswd by rememberSaveable{ mutableStateOf("") }
+                    SignIn(userViewModel, email, paswd, { email = it }, {paswd = it})
 
                 }
             }
@@ -65,8 +85,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignIn(email: String, passwd: String) {
+fun SignIn(userViewModel: UserViewModel, email: String, paswd: String, changeEmail : (String) -> Unit, changePaswd: (String) -> Unit) {
     Column(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -102,12 +123,16 @@ fun SignIn(email: String, passwd: String) {
                 modifier = Modifier.padding(top = 10.dp)
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp).padding(horizontal = 100.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+                    .padding(horizontal = 100.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 IconButton(
                     onClick = {},
-                    modifier = Modifier.then(Modifier.size(40.dp))
+                    modifier = Modifier
+                        .then(Modifier.size(40.dp))
                         .border(0.5.dp, Color.White, shape = CircleShape)
                         .padding(10.dp)
                 ) {
@@ -119,7 +144,8 @@ fun SignIn(email: String, passwd: String) {
                 }
                 IconButton(
                     onClick = {},
-                    modifier = Modifier.then(Modifier.size(40.dp))
+                    modifier = Modifier
+                        .then(Modifier.size(40.dp))
                         .border(0.5.dp, Color.White, shape = CircleShape)
                         .padding(10.dp)
                 ) {
@@ -145,19 +171,33 @@ fun SignIn(email: String, passwd: String) {
                 }
                 OutlinedTextField(
                     email,
-                    onValueChange = {},
-                    placeholder = { Text("Enter Email Address",  color = Color.White) },
+                    onValueChange = { changeEmail(it) },
+                    placeholder = { Text("Enter Email Address",  color = Color.Gray) },
+                    colors = TextFieldDefaults.textFieldColors(focusedTextColor = Color.White, containerColor = Color.Transparent),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 10.dp),
+                        .padding(top = 10.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .border(
+                            color = Color.Gray,
+                            width = 0.5.dp,
+                            shape = RoundedCornerShape(3.dp)
+                        )
                 )
                 OutlinedTextField(
-                    value = passwd,
-                    onValueChange = {},
-                    placeholder = { Text("Password", color = Color.White) },
+                    value = paswd,
+                    onValueChange = {changePaswd(it)},
+                    placeholder = { Text("Password", color = Color.Gray) },
+                    colors = TextFieldDefaults.textFieldColors(focusedTextColor = Color.White, containerColor = Color.Transparent),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp),
+                        .padding(top = 20.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .border(
+                            color = Color.Gray,
+                            width = 0.5.dp,
+                            shape = RoundedCornerShape(5.dp)
+                        ),
                 )
                 Text(
                     "Forgot password?", modifier = Modifier
@@ -165,8 +205,10 @@ fun SignIn(email: String, passwd: String) {
                         .clickable { }, color = colorResource(R.color.purple_700)
                 )
                 Button(
-                    onClick = {},
-                    enabled = false,
+                    onClick = {
+//                        lifecycleScope.launch{ userViewModel.login(email, paswd) }
+                              },
+                    enabled = email!="" && paswd!="",
                     colors = ButtonColors(
                         containerColor = colorResource(R.color.black),
                         contentColor = colorResource(R.color.white),
