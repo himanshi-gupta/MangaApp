@@ -16,6 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.mangaapp.database.UserDatabase
 import com.example.mangaapp.network.MangaApi
@@ -49,9 +52,27 @@ class MainActivity : ComponentActivity() {
                     var email by rememberSaveable { mutableStateOf("") }
                     var paswd by rememberSaveable{ mutableStateOf("") }
                     val mangaList = mangaViewModel.mangaList.collectAsLazyPagingItems()
-//                    ̵SignIn(userViewModel, email, paswd, { email = it }, {paswd = it})
-                    HomeScreen(mangaList)
 
+                    val navControl = rememberNavController()
+                    NavHost(navController = navControl,
+                        startDestination = "SignIn"){
+                        composable("SignIn"){
+                            SignIn (navControl,userViewModel, email, paswd, { email = it }, {paswd = it})
+                        }
+                        composable("Home Screen"){
+                            HomeScreen(navControl,mangaList)
+                        }
+//                        composable("Detailed View/{lastscreen}/{title}/{desc}/{poster}"){
+//                            val lastScreen = it.arguments?.getString("lastscreen") ?: "Landing Page"
+//                            val  poster = "https://image.tmdb.org/t/p/w500/"+ (it.arguments?.getString("poster") ?: "")
+//                            val  title = it.arguments?.getString("title") ?: ""
+//                            val  descrptn = it.arguments?.getString("desc") ?: ""
+//                            DetailedView(navController = navControl,poster,title, descrptn, lastScreen, status)
+//                        }
+//                        composable("Face Recognition"){
+//                            Watchlist(navController = navControl, movieViewModel)
+//                        }
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.example.mangaapp.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,19 +27,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.mangaapp.R
 import com.example.mangaapp.viewmodels.UserViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignIn(userViewModel: UserViewModel, email: String, paswd: String, changeEmail : (String) -> Unit, changePaswd: (String) -> Unit) {
+fun SignIn(navController: NavController, userViewModel: UserViewModel, email: String, paswd: String, changeEmail : (String) -> Unit, changePaswd: (String) -> Unit) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -158,6 +162,11 @@ fun SignIn(userViewModel: UserViewModel, email: String, paswd: String, changeEma
             Button(
                 onClick = {
 //                        lifecycleScope.launch{ userViewModel.login(email, paswd) }
+                    if (email == "abc@gmail.com" && paswd == "abc") {
+                        navController.navigate("Home Screen")
+                    } else {
+                        Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 enabled = email!="" && paswd!="",
                 colors = ButtonColors(
