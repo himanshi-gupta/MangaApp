@@ -1,4 +1,4 @@
-# Manga Explorer with Face Recognition
+# Manga Explorer
 
 ## Overview
 This Android application was developed as part of an assignment following Clean Architecture + MVVM principles. The app features user authentication, manga data fetching & caching.
