@@ -11,7 +11,7 @@ interface MangaApi {
     @GET("manga/fetch")
     suspend fun getManga(
         @Header("x-rapidapi-host") host: String = "mangaverse-api.p.rapidapi.com",
-        @Header("x-rapidapi-key") key : String = "f6d9014397mshc2030528f69683fp1ca3acjsn8003f1261375",
+        @Header("x-rapidapi-key") key : String = "",
         @Query("page") page : Int
     ) : Manga
 

@@ -30,13 +30,4 @@ class MangaViewModel(private val mangaRepo: MangaRepo) : ViewModel(){
             mangaRepo.getMangaList()
         }
     }
-
-//    suspend fun getMangalist(){
-//        var manga : Manga? = null
-//        val r = viewModelScope.async(Dispatchers.IO) {
-//            manga = MangaApi.getMovieApi(MangaApi.getRetrofit()).getManga(page = 1)
-//        }
-//        r.await()
-//        Log.d("Himanshi","${manga?.data}")
-//    }
 }
