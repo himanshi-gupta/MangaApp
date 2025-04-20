@@ -1,5 +1,6 @@
 package com.example.mangaapp.viewmodels
 
+import androidx.annotation.BoolRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mangaapp.database.User
@@ -7,14 +8,14 @@ import com.example.mangaapp.database.UserDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.contracts.Returns
 
 class UserViewModel(val userDao: UserDao) : ViewModel(){
     suspend fun getPaswd(email : String) : String{
-        val paswd = viewModelScope.async{
+        return withContext(Dispatchers.IO) {
             userDao.getPaswd(email)
         }
-        return paswd.await()
     }
 
     fun addUser(email: String, paswd : String){
@@ -23,11 +24,15 @@ class UserViewModel(val userDao: UserDao) : ViewModel(){
         }
     }
 
-    suspend fun login(email: String, paswd: String){
-        viewModelScope.launch {
+    suspend fun userAuthenticator(email: String, paswd: String) : Boolean{
+        return withContext(Dispatchers.IO){
             val savedPaswd = getPaswd(email)
-            if(savedPaswd=="")
-                addUser(email,paswd)
+            if (savedPaswd == "" || savedPaswd == null) {
+                addUser(email, paswd)
+                true
+            } else {
+                savedPaswd == paswd
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.mangaapp.screens
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,6 +30,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.mangaapp.R
 import com.example.mangaapp.models.Data
 import com.example.mangaapp.viewmodels.MangaViewModel
+import java.net.URLEncoder
 
 @Composable
 fun HomeScreen(navController: NavController, mangaList : LazyPagingItems<Data>){
@@ -51,7 +53,13 @@ fun HomeScreen(navController: NavController, mangaList : LazyPagingItems<Data>){
                     modifier = Modifier
                         .fillMaxSize()
 //                        .padding(5.dp)
-                        .clip(shape = RoundedCornerShape(15.dp)),
+                        .clip(shape = RoundedCornerShape(15.dp))
+                        .clickable {
+                            val encodedTitle = URLEncoder.encode(it.title, "UTF-8")
+                            val encodedSubtitle = URLEncoder.encode(it.subTitle, "UTF-8")
+                            val encodedSummary = URLEncoder.encode(it.summary, "UTF-8")
+                            val encodedUrl = URLEncoder.encode(it.thumb, "UTF-8")
+                            navController.navigate("Detailed View/$encodedTitle/$encodedSubtitle/$encodedSummary/$encodedUrl") },
                     error = painterResource(id = R.drawable.ic_launcher_background)
                 )
 

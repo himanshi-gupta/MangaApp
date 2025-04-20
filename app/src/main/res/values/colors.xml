@@ -11,4 +11,6 @@
     <color name="dull_grey">#4a4645</color>
     <color name="disabled_grey">#64605f</color>
     <color name="Jet_black">#0f0f0f</color>
+    <color name="Link_color">#999997</color>
+
 </resources>

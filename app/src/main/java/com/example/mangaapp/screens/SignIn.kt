@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
@@ -23,6 +24,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,19 +35,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.mangaapp.R
 import com.example.mangaapp.viewmodels.UserViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignIn(navController: NavController, userViewModel: UserViewModel, email: String, paswd: String, changeEmail : (String) -> Unit, changePaswd: (String) -> Unit) {
     val context = LocalContext.current
+
+    var isLoading by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -72,7 +83,7 @@ fun SignIn(navController: NavController, userViewModel: UserViewModel, email: St
                 "Please enter your details to sign in",
                 color = colorResource(R.color.white),
                 style = TextStyle(
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight(100)
                 ),
                 modifier = Modifier.padding(top = 10.dp)
@@ -128,7 +139,7 @@ fun SignIn(navController: NavController, userViewModel: UserViewModel, email: St
                 email,
                 onValueChange = { changeEmail(it) },
                 placeholder = { Text("Enter Email Address",  color = Color.Gray) },
-                colors = TextFieldDefaults.textFieldColors(focusedTextColor = Color.White, containerColor = Color.Transparent),
+                colors = TextFieldDefaults.textFieldColors(unfocusedTextColor = Color.White, focusedTextColor = Color.White, containerColor = Color.Transparent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
@@ -143,7 +154,7 @@ fun SignIn(navController: NavController, userViewModel: UserViewModel, email: St
                 value = paswd,
                 onValueChange = {changePaswd(it)},
                 placeholder = { Text("Password", color = Color.Gray) },
-                colors = TextFieldDefaults.textFieldColors(focusedTextColor = Color.White, containerColor = Color.Transparent),
+                colors = TextFieldDefaults.textFieldColors(unfocusedTextColor = Color.White, focusedTextColor = Color.White, containerColor = Color.Transparent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 20.dp)
@@ -156,19 +167,29 @@ fun SignIn(navController: NavController, userViewModel: UserViewModel, email: St
             )
             Text(
                 "Forgot password?", modifier = Modifier
-                    .padding(top = 10.dp)
-                    .clickable { }, color = colorResource(R.color.purple_700)
+                    .padding(end = 0.dp, top = 10.dp)
+                    .clickable { }, color = colorResource(R.color.Link_color)
             )
             Button(
                 onClick = {
-//                        lifecycleScope.launch{ userViewModel.login(email, paswd) }
-                    if (email == "abc@gmail.com" && paswd == "abc") {
-                        navController.navigate("Home Screen")
-                    } else {
-                        Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
+                    isLoading = true
+                    userViewModel.viewModelScope.launch {
+                        try {
+                            val isAuthenticated = userViewModel.userAuthenticator(email, paswd)
+                            if (isAuthenticated) {
+                                navController.navigate("Home Screen") {
+                                    popUpTo("SignIn") { inclusive = true }
+                                }
+                            } else {
+                                Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        } finally {
+                            isLoading = false
+                        }
                     }
                 },
-                enabled = email!="" && paswd!="",
+                enabled = email!="" && paswd!="" && !isLoading,
                 colors = ButtonColors(
                     containerColor = colorResource(R.color.black),
                     contentColor = colorResource(R.color.white),
@@ -178,7 +199,14 @@ fun SignIn(navController: NavController, userViewModel: UserViewModel, email: St
                     .fillMaxWidth()
                     .padding(top = 10.dp)
             ) {
-                Text("Sign In")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                } else {
+                    Text("Sign In")
+                }
             }
             Text("Don't have an account? Sign Up")
         }

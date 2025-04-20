@@ -1,6 +1,7 @@
 package com.example.mangaapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,13 +17,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.mangaapp.database.UserDatabase
 import com.example.mangaapp.network.MangaApi
 import com.example.mangaapp.repository.MangaRepo
+import com.example.mangaapp.screens.DetailedView
 import com.example.mangaapp.screens.HomeScreen
 import com.example.mangaapp.ui.theme.MangaAppTheme
 import com.example.mangaapp.viewmodels.UserViewModel
@@ -62,13 +66,21 @@ class MainActivity : ComponentActivity() {
                         composable("Home Screen"){
                             HomeScreen(navControl,mangaList)
                         }
-//                        composable("Detailed View/{lastscreen}/{title}/{desc}/{poster}"){
-//                            val lastScreen = it.arguments?.getString("lastscreen") ?: "Landing Page"
-//                            val  poster = "https://image.tmdb.org/t/p/w500/"+ (it.arguments?.getString("poster") ?: "")
-//                            val  title = it.arguments?.getString("title") ?: ""
-//                            val  descrptn = it.arguments?.getString("desc") ?: ""
-//                            DetailedView(navController = navControl,poster,title, descrptn, lastScreen, status)
-//                        }
+                        composable(
+                            route = "Detailed View/{title}/{subtitle}/{summary}/{url}",
+                            arguments = listOf(
+                                navArgument("title") { type = NavType.StringType },
+                                navArgument("subtitle") { type = NavType.StringType },
+                                navArgument("summary") { type = NavType.StringType },
+                                navArgument("url") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val title = backStackEntry.arguments?.getString("title") ?: ""
+                            val subtitle = backStackEntry.arguments?.getString("subtitle") ?: ""
+                            val summary = backStackEntry.arguments?.getString("summary") ?: ""
+                            val url = backStackEntry.arguments?.getString("url") ?: ""
+                            DetailedView(title, subtitle, summary, url)
+                        }
 //                        composable("Face Recognition"){
 //                            Watchlist(navController = navControl, movieViewModel)
 //                        }
